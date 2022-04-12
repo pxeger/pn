@@ -11,21 +11,19 @@
     - Live editing over websockets
 - Bugs
     - Drag and drop isn't mobile-friendly
-    - You can't insert a new node in a specific place
+    - You can't insert a new node in a specific place without enabling JavaScript
     - You can't move nodes into other nodes as new children
-    - Relies on 3rd-party CDN (for FontAwesome) 
+    - Relies on 3rd-party CDN (for FontAwesome)
     - Changes are not saved permanently, so they will be lost after a server restart
     - Light theme is kinda ugly
     - Websocket reconnection is janky (it just reloads the whole page lol)
 - FAQ
     - Where's the source code?
-        - Coming soon
+        - https://github.com/pxeger/pn
     - What is this for?
         - Note-taking
     - What does "pn" mean?
         - "pxeger's notes"
-    - Why is there no HTTPS?
-        - Sorry. This is just an artefact of how I'm hosting it for now; I couldn't be bothered to set up HTTPS
     - Why is there no authentication?
         - This is not really designed for very-multi-user use
         - Authentication is a solved problem, and can just be implemented independently of the app itself, using a reverse proxy
