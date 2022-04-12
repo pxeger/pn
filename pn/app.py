@@ -30,6 +30,10 @@ NO_CACHE_HEADERS = {
 }
 
 
+async def index(request):
+    return RedirectResponse("/edit", 307)
+
+
 async def edit(request):
     return template(
         "view.html",
@@ -70,8 +74,8 @@ async def help(request):
 consumers = Set()
 
 
-def produce(message, origin=None):
-    encoded = json.dumps({"type": "message", "value": message})
+def produce(messages, origin=None):
+    encoded = json.dumps(messages)
     tasks = [asyncio.create_task(ws.send_text(encoded)) for ws in consumers if ws is not origin]
     if tasks:
         asyncio.create_task(
@@ -165,47 +169,58 @@ async def websocket_route(ws):
     await ws.accept()
     consumers.add(ws)
     try:
-        async for message in ws.iter_json():
-            match message:
-                case {"type": "set_content", "id": int() as id, "content": str() as content}:
-                    if id not in document.nodes:
-                        await ws.send_json({"type": "error", "value": f"node ID {id} not found"})
-                    else:
-                        document.set_content(id, content)
-                        produce(message, ws)
-                case {"type": "move", "id": int() as id, "parent": int() as parent_id, "index": int() as index} if index >= 0:
-                    if parent_id not in document.nodes:
-                        await ws.send_json({"type": "error", "value": f"node ID {parent_id} not found"})
-                    elif id not in document.nodes:
-                        await ws.send_json({"type": "error", "value": f"node ID {id} not found"})
-                    else:
-                        document.move(id, parent_id, index)
-                        produce(message, ws)
-                case {"type": "create", "parent": int() as id, "content": str() as content}:
-                    if id not in document.nodes:
-                        await ws.send_json({"type": "error", "value": f"node ID {id} not found"})
-                    else:
-                        result = document.create_child(id, content).id
-                        message["id"] = result
-                        produce(message, ws)
-                        # note: client doesn't know ID of new node, so we send the message to them too
-                        await ws.send_json({"type": "message", "value": message | {"was_you": True}})
-                case {"type": "delete", "id": int() as id}:
-                    if id not in document.nodes:
-                        await ws.send_json({"type": "error", "value": f"node ID {id} not found"})
-                    else:
-                        ok = document.delete_node(id)
-                        if ok:
-                            produce(message, ws)
+        async for payload in ws.iter_json():
+            if not isinstance(payload, list):
+                await ws.send_json({"type": "error", "value": "messages must be a list"})
+                continue
+            to_produce = []
+            errors = []
+            for message in payload:
+                match message:
+                    case {"type": "set_content", "id": int() as id, "content": str() as content}:
+                        if id not in document.nodes:
+                            errors.append(f"node ID {id} not found")
                         else:
-                            await ws.send_json({"type": "error", "value": "cannot delete this node"})
-                case _:
-                    return await ws.close(1008, "invalid message")
+                            document.set_content(id, content)
+                            to_produce.append(message)
+                    case {"type": "move", "id": int() as id, "parent": int() as parent_id, "index": int() as index} if index >= 0:
+                        if parent_id not in document.nodes:
+                            errors.append(f"node ID {parent_id} not found")
+                        elif id not in document.nodes:
+                            errors.append(f"node ID {id} not found")
+                        else:
+                            document.move(id, parent_id, index)
+                            to_produce.append(message)
+                    case {"type": "create", "parent": int() as id, "content": str() as content}:
+                        if id not in document.nodes:
+                            errors.append(f"node ID {id} not found")
+                        else:
+                            result = document.create_child(id, content).id
+                            message["id"] = result
+                            to_produce.append(message)
+                            # note: client doesn't know ID of new node, so we send the message to them too
+                            await ws.send_json([message | {"was_you": True}])
+                    case {"type": "delete", "id": int() as id}:
+                        if id not in document.nodes:
+                            errors.append(f"node ID {id} not found")
+                        else:
+                            ok = document.delete_node(id)
+                            if ok:
+                                to_produce.append(message)
+                            else:
+                                errors.append(f"cannot delete this node: {id}")
+                    case _:
+                        errors.append("invalid message")
+            if to_produce:
+                produce(to_produce, ws)
+            if errors:
+                await ws.send_json([{"type": "error", "value": e} for e in errors])
     finally:
         consumers.remove(ws)
 
 
 routes = [
+    Route("/", endpoint=index, methods={"GET"}),
     Route("/edit", endpoint=edit, methods={"GET"}),
     Route("/view", endpoint=view, methods={"GET"}),
     Route("/help", endpoint=help, methods={"GET"}),
