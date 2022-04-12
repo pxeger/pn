@@ -1,0 +1,266 @@
+* i{
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #111;
+    color: white;
+    font-family: sans-serif;
+}
+
+/* fix for fullscreen */
+::backdrop {
+    background: #111;
+}
+
+.button {
+    all: unset;
+    appearance: none;
+    padding: 0 0.4em;
+    cursor: pointer;
+}
+
+.button a {
+    all: unset;
+}
+
+#header {
+    position: sticky;
+    display: flex;
+    padding: 0 0.5em;
+    background: #272727;
+}
+
+#save-warning {
+    margin: auto 1em;
+}
+
+#save-warning input {
+    display: none;
+}
+
+#save-warning input:checked ~ #save-warning-text {
+    display: none;
+}
+
+.connected #save-warning {
+    display: none;
+}
+
+#connected-message {
+    display: none;
+}
+
+.connected #connected-message {
+    display: block;
+    margin: auto;
+}
+
+#disconnected-message {
+    display: none;
+}
+
+.js #disconnected-message {
+    display: unset;
+    margin: auto;
+}
+
+.connected #disconnected-message {
+    display: none;
+}
+
+.js .noscript {
+    display: none;
+}
+
+#fullscreen {
+    display: none;
+}
+
+.js #fullscreen {
+    display: unset;
+}
+
+.expand {
+    flex-grow: 1;
+}
+
+#root {
+    padding: 0.5em 0;
+}
+
+.branch {
+    margin-left: 2em;
+}
+
+.checkbox:not(:checked) ~ .branch { display: none; }
+
+.checkbox         ~ .leaf .fa-chevron-right { display: inline-block; }
+.checkbox         ~ .leaf .fa-chevron-down  { display: none;  }
+.checkbox:checked ~ .leaf .fa-chevron-right { display: none;  }
+.checkbox:checked ~ .leaf .fa-chevron-down  { display: inline-block; }
+
+.fa-solid {
+    margin: auto 0;
+}
+
+.checkbox {
+    display: none;
+}
+
+/* has no sibling */
+.node:first-of-type > .leaf > .controls > .move-up,
+.node:last-of-type  > .leaf > .controls > .move-down {
+    visibility: hidden;
+}
+
+/* has no grandparent */
+#root > .node > .leaf > .controls > .move-out {
+    visibility: hidden;
+}
+
+/* only child of root node: cannot delete */
+#root > .node:first-of-type:last-of-type > .leaf > .controls > .delete {
+    visibility: hidden;
+}
+
+.collapse, .grip {
+    display: inline-block;
+    padding: 0 0.5em;
+    user-select: none;
+}
+
+.collapse {
+    cursor: pointer;
+}
+
+.grip {
+    cursor: ns-resize;
+}
+
+.empty > .leaf > .collapse,
+.empty > .branch {
+    display: none;
+}
+
+.has-children > .leaf > .grip {
+    display: none;
+}
+
+.connected #submit,
+.connected .move-out,
+.connected .move-up,
+.connected .move-down {
+    display: none;
+}
+
+#header .button {
+    padding: 0.4em 0.5em;
+}
+
+#root > .node > .leaf {
+    padding-left: 0.5em;
+}
+
+#root > .node .node > .leaf {
+    margin-left: 0.5em;
+}
+
+.leaf {
+    padding-right: 0.5em;
+    display: flex;
+    flex-wrap: nowrap;
+    position: relative;
+}
+
+.leaf-text {
+    appearance: none;
+    all: unset;
+    display: inline-block;
+    margin: 0 0.1em;
+    padding: 0.1em;
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.leaf:hover, .leaf:focus-within .collapse:hover, .leaf:focus-within .control:hover, .collapse:hover {
+    background: #272727;
+}
+
+.leaf:focus-within, .button:hover, .collapse:hover {
+    background: #333;
+}
+
+.controls {
+    display: flex;
+}
+
+.controls-label {
+    display: none;
+}
+
+#connected-message .cloud-animate {
+    background: radial-gradient(#22D3EE, #CFFAFE);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+#disconnected-message .cloud-animate {
+    background: radial-gradient(#F59E0B, #FDE68A);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.drop-top {
+    box-shadow: currentColor 0 1px inset;
+}
+
+.drop-bottom {
+    box-shadow: currentColor 0 -1px inset;
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background: white;
+        color: black;
+    }
+
+    /* fix for fullscreen */
+    ::backdrop {
+        background: white;
+    }
+
+    #header {
+        background: #f0f0f0;
+    }
+
+    .leaf:hover, .leaf:focus-within .collapse:hover, .leaf:focus-within .control:hover, .collapse:hover {
+        background: #f0f0f0;
+    }
+
+    .leaf:focus-within, .button:hover, .collapse:hover {
+        background: #e0e0e0;
+    }
+}
+
+@media (max-width: 600px) {
+    .sm-hide {
+        display: none;
+    }
+
+    .controls-label {
+        display: unset;
+    }
+
+    .controls {
+        display: none;
+    }
+
+    .controls-checkbox:checked ~ .controls {
+        display: flex;
+    }
+}

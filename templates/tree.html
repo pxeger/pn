@@ -1,0 +1,64 @@
+{%- macro node_text(item) -%}
+    <input
+        id="{{ item.id }}"
+        value="{{ item.content }}"
+        name="{{ item.id }}"
+        class="leaf-text"
+        autocomplete="off"
+        {% if item.content == "" %}autofocus{% endif %}
+        {% if not edit %}readonly{% endif %}
+    >
+    {% if edit %}
+        <input type="checkbox" class="controls-checkbox checkbox" id="cc_{{ item.id }}" autocomplete="off">
+        <div class="controls">
+            <button type="submit" formaction="/move_out/{{ item.id }}" class="button control move-out">
+                <i class="fa-solid fa-reply"></i>
+            </button>
+            <button type="submit" formaction="/move_up/{{ item.id }}" class="button control move-up">
+                <i class="fa-solid fa-caret-up"></i>
+            </button>
+            <button type="submit" formaction="/move_down/{{ item.id }}" class="button control move-down">
+                <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <button type="submit" formaction="/create/{{ item.id }}" class="create button control">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+            <button type="submit" formaction="/delete/{{ item.id }}" class="delete button control">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+        <label class="button controls-label" for="cc_{{ item.id }}">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </label>
+    {% endif %}
+{%- endmacro -%}
+
+{%- macro node_tags(item) -%}
+    data-id="{{ item.id }}"
+    {%- for tag in item.tags -%}
+        {%- if tag.startswith("anchor=") -%}
+            id="{{ tag.removeprefix("anchor=") }}"
+        {% else %}
+            data-tag_{{ tag }}
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
+{%- for item in tree recursive -%}
+    <div class="node {{ 'has-children' if item else 'empty' }}" {{ node_tags(item) }}>
+        <input class="checkbox" type="checkbox" checked id="cb_{{ item.id }}">
+        <div class="leaf">
+            <label class="collapse" for="cb_{{ item.id }}">
+                <i class="fa-solid fa-chevron-right"></i>
+                <i class="fa-solid fa-chevron-down"></i>
+            </label>
+            <span class="grip" draggable="{{ edit }}">
+                <i class="fa-solid fa-grip-lines"></i>
+            </span>
+            {{ node_text(item) }}
+        </div>
+        <div class="branch">
+            {{ loop(item) }}
+        </div>
+    </div>
+{%- endfor -%}
