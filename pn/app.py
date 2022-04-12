@@ -30,6 +30,10 @@ NO_CACHE_HEADERS = {
 }
 
 
+async def index(request):
+    return RedirectResponse("/edit", 307)
+
+
 async def edit(request):
     return template(
         "view.html",
@@ -206,6 +210,7 @@ async def websocket_route(ws):
 
 
 routes = [
+    Route("/", endpoint=index, methods={"GET"}),
     Route("/edit", endpoint=edit, methods={"GET"}),
     Route("/view", endpoint=view, methods={"GET"}),
     Route("/help", endpoint=help, methods={"GET"}),
