@@ -13,68 +13,77 @@
     $('#fullscreen').addEventListener('click', () => $('#root').requestFullscreen());
 
     if (location.pathname == '/help') {
+        // no editing functionality needed on help page
         return;
     }
 
-    // list of changed elements
-    let queue = new Set();
-
-    const flush = () => {
-        const oldQueue = queue;
-        queue = new Set();
-        oldQueue.forEach(element => {
-            ws.send(JSON.stringify({type: 'set_content', id: +element.id, content: element.value}));
-        });
-    }
-
-    let isConnected = false;
-
-    const wsURL = new URL(window.location);
-    wsURL.pathname = '/ws';
-    wsURL.hash = '';
-    wsURL.protocol = wsURL.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(wsURL);
-    ws.onerror = () => {
-        alert('Failed to connect to the server. Your changes are not being saved automatically');
-        document.documentElement.classList.remove('connected');
-        isConnected = false;
-    }
-    ws.onclose = (e) => {
-        document.documentElement.classList.remove('connected');
-        if (e.code === 1008) {
-            console.error('websocket error 1008', e.reason);
-            alert('An internal error occurred');
+    const connect = () => {
+        const wsURL = new URL(location);
+        wsURL.pathname = '/ws';
+        wsURL.hash = '';
+        wsURL.protocol = wsURL.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(wsURL);
+        ws.onclose = (e) => {
+            if (e.code === 1012) {
+                // service restart
+                location.reload();
+                return;
+            } else if (e.code === 1001) {
+                // browser is navigating away. Changing state now would be confusing
+                return;
+            }
+            document.documentElement.classList.remove('connected');
+            if (e.wasClean) {
+                alert(`An internal error occured:\n${e.code}\n${e.reason}`);
+            } else {
+                reconnects += 1;
+                if (reconnects < 5) setTimeout(() => connect(), 1000);
+                else alert('Websocket connection failed. Check your network connection, and then reload the page.');
+            }
         }
-        setTimeout(() => location.reload(), 1000);
-        isConnected = false;
-    }
-    ws.onopen = () => {
-        document.documentElement.classList.add('connected');
-        setInterval(flush, 500 /* milliseconds */);
-        isConnected = true;
-    }
-    ws.onmessage = (e) => {
-        const payload = JSON.parse(e.data);
-        switch(payload.type) {
-            case 'error':
-                alert(payload.value);
-                break;
-            case 'message':
-                switch (payload.value.type) {
+        ws.onopen = () => {
+            document.documentElement.classList.add('connected');
+            reconnects = 0;
+            flushMessageQueue();
+            setInterval(flushMessageQueue, 200);
+        }
+        ws.onmessage = (e) => {
+            const payload = JSON.parse(e.data);
+            for (const message of payload) {
+                switch (message.type) {
+                    case 'error':
+                        alert('An internal error occurred:\n' + message.value);
+                        break;
                     case 'set_content':
-                        $id(payload.value.id).value = payload.value.content;
+                        $id(message.id).value = message.content;
                         break;
                     case 'move':
-                        move(payload.value);
+                        move(message);
                         break;
                     case 'delete':
-                        remove($node(payload.value.id));
+                        remove($node(message.id));
                         break;
                     case 'create':
-                        create(payload.value);
+                        create(message);
                         break;
+                    default:
+                        // unknown
+                        console.warn('unknown message', message);
                 }
-                break;
+            }
+        }
+    }
+    const messageQueue = [];
+    let reconnects = 0;
+    let ws;
+    connect();
+    const sendMessage = (message) => {
+        messageQueue.push(message);
+    }
+    const flushMessageQueue = () => {
+        const messages = messageQueue.splice(0);
+        if (messages.length > 0) {
+            ws.send(JSON.stringify(messages));
         }
     }
 
@@ -129,9 +138,6 @@
     }
 
     document.addEventListener('dragstart', (event) => {
-        if (!isConnected) {
-            return;
-        }
         const leaf = $parent(event.target, 'leaf');
         const leafText = leaf.querySelector('.leaf-text');
         event.dataTransfer.setData('text/plain', leafText.value);
@@ -149,9 +155,8 @@
     const addEventListeners = (leaf) => {
         leaf.querySelectorAll('.leaf-text').forEach(element => {
             element.addEventListener('input', (event) => {
-                if (!isConnected) return;
                 if (event.isComposing) return;
-                queue.add(event.target);
+                sendMessage({type: 'set_content', id: +event.target.id, content: event.target.value});
             });
             element.addEventListener('keydown', (event) => {
                 // avoid intefering with system shortcuts
@@ -194,19 +199,16 @@
             });
         });
         leaf.addEventListener('dragenter', (event) => {
-            if (!isConnected) return;
             const el = $parent(event.target, 'leaf');
             el.classList.add('drag');
         });
         leaf.addEventListener('dragleave', (event) => {
-            if (!isConnected) return;
             const el = $parent(event.target, 'leaf');
             el.classList.remove('drag');
             el.classList.remove('drop-top');
             el.classList.remove('drop-bottom');
         });
         leaf.addEventListener('dragover', (event) => {
-            if (!isConnected) return;
             const el = $parent(event.target, 'leaf');
             if (event.offsetY <= el.scrollHeight / 2) {
                 el.classList.remove('drop-bottom');
@@ -218,7 +220,6 @@
         });
         leaf.addEventListener('drop', (event) => {
             event.preventDefault();
-            if (!isConnected) return;
             const el = $parent(event.target, 'leaf');
             el.classList.remove('drag');
             el.classList.remove('drop-top');
@@ -238,12 +239,11 @@
                 const index = [...dragged.parentElement.children].indexOf(dragged);
                 const parentId = $parent(dragged.parentElement, 'node').dataset.id;
                 const message = {type: 'move', id: +id, index, parent: +parentId}
-                ws.send(JSON.stringify(message));
+                sendMessage(message);
             }
         });
         leaf.querySelectorAll('.delete').forEach((element) => {
             element.addEventListener('click', (event) => {
-                if (!isConnected) return;
                 event.preventDefault();
                 if (!confirm('Are you sure you want to delete this?')) return;
                 const node = $parent(event.target, 'node');
@@ -251,16 +251,15 @@
                 remove(node);
                 updateBranchClass(oldParent);
                 const message = {type: 'delete', id: +node.dataset.id};
-                ws.send(JSON.stringify(message));
+                sendMessage(message);
             });
         });
         leaf.querySelectorAll('.create').forEach((element) => {
             element.addEventListener('click', (event) => {
-                if (!isConnected) return;
                 event.preventDefault();
                 const id = $parent(event.target, 'node').dataset.id;
                 const message = {type: 'create', parent: +id, content: ''};
-                ws.send(JSON.stringify(message));
+                sendMessage(message);
             });
         });
     }
