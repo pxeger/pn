@@ -1,0 +1,5 @@
+- Welcome to the demo instance of pn
+    - Please don't break it
+    - This instance is regularly recreated
+    - Everything here is completely viewable and editable by the public
+- Try creating a new node as here!
