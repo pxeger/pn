@@ -1,5 +1,8 @@
 - Welcome to the demo instance of pn
     - Please don't break it
-    - This instance is regularly recreated
+    - This instance is regularly recreated, so its data will be stored
     - Everything here is completely viewable and editable by the public
+    - This instance is deployed from the demo branch
+        - https://github.com/pxeger/pn/tree/demo
+        - This will mostly be kept up-to-date with the current main branch
 - Try creating a new node as here!
