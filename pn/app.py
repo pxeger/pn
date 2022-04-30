@@ -71,6 +71,53 @@ async def help(request):
     )
 
 
+async def tags(request):
+    id = request.path_params["id"]
+    if id not in document.nodes:
+        return PlainTextResponse("not found", 404)
+    return template(
+        "tags.html",
+        {
+            "request": request,
+            "item": document.nodes[id],
+        }
+    )
+
+
+async def add_tag(request):
+    match dict(await request.form()):
+        case {"item_id": item_id, "tag": tag}:
+            try:
+                id = int(item_id)
+            except ValueError:
+                return PlainTextResponse("invalid request", 419)
+            if id not in document.nodes:
+                return PlainTextResponse("not found", 404)
+            document.nodes[id].tags.add(tag)
+            return RedirectResponse(f"/tags/{id}", 303)
+        case x:
+            print(x)
+            return PlainTextResponse("invalid request", 419)
+
+
+async def delete_tag(request):
+    match await request.form():
+        case {"item_id": item_id, "tag": tag}:
+            try:
+                id = int(item_id)
+            except ValueError:
+                return PlainTextResponse("invalid request", 419)
+            if id not in document.nodes:
+                return PlainTextResponse("not found", 404)
+            try:
+                document.nodes[id].tags.remove(tag)
+            except KeyError:
+                pass
+            return RedirectResponse(f"/tags/{id}", 303)
+        case _:
+            return PlainTextResponse("invalid request", 419)
+
+
 consumers = Set()
 
 
@@ -230,6 +277,9 @@ routes = [
     Route("/edit", endpoint=edit, methods={"GET"}),
     Route("/view", endpoint=view, methods={"GET"}),
     Route("/help", endpoint=help, methods={"GET"}),
+    Route("/tags/{id:int}", endpoint=tags, methods={"GET"}),
+    Route("/tags", endpoint=add_tag, methods={"POST"}),
+    Route("/tags/delete", endpoint=delete_tag, methods={"POST"}),
     Route("/save", endpoint=save, methods={"POST"}),
     Route("/create/{id:int}", endpoint=create, methods={"POST"}),
     Route("/delete/{id:int}", endpoint=delete, methods={"POST"}),

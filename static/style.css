@@ -20,10 +20,14 @@ body {
     appearance: none;
     padding: 0 0.4em;
     cursor: pointer;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: stretch;
 }
 
-.button a {
-    all: unset;
+.button .label {
+    margin-left: 0.3em;
 }
 
 #header {
@@ -80,7 +84,7 @@ body {
 }
 
 .js #fullscreen {
-    display: unset;
+    display: flex;
 }
 
 .expand {
@@ -274,4 +278,13 @@ body {
     font-weight: bold;
     font-size: 1.5em;
     margin: 0.3em 0;
+}
+
+.tags-interface {
+    max-width: 60em;
+    margin: 1em auto;
+}
+
+.tag {
+    display: flex;
 }

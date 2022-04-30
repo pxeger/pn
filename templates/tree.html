@@ -11,6 +11,9 @@
     {% if edit %}
         <input type="checkbox" class="controls-checkbox checkbox" id="cc_{{ item.id }}" autocomplete="off">
         <div class="controls">
+            <a href="/tags/{{ item.id }}" class="button control tags">
+                <i class="fa-solid fa-wrench"></i>
+            </a>
             <button type="submit" formaction="/move_out/{{ item.id }}" class="button control move-out">
                 <i class="fa-solid fa-reply"></i>
             </button>

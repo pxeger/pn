@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+        <title>Edit tags</title>
+    </head>
+    <body>
+        <header id="header">
+            <a href="/edit" class="button">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="label">Back</label>
+            </a>
+        </header>
+        <main class="tags-interface">
+            {% for tag in item.tags %}
+                <form action="/tags/delete" method="POST" class="tag">
+                    <input value="{{ item.id }}" name="item_id" type="hidden">
+                    <input value="{{ tag }}" name="tag" class="leaf-text" readonly>
+                    <button class="button" type="submit">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span class="label">Delete</span>
+                    </button>
+                </form>
+            {% endfor %}
+            <hr>
+            <form action="/tags" method="POST" class="tag">
+                <input value="{{ item.id }}" name="item_id" type="hidden">
+                <input name="tag" class="leaf-text" placeholder="Add new tag?">
+                <button class="button" type="submit">
+                    <i class="fa-solid fa-check"></i>
+                    <span class="label">Add</span>
+                </button>
+            </form>
+        </main>
+    </body>
+</html>
