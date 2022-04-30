@@ -36,8 +36,8 @@
 {%- macro node_tags(item) -%}
     data-id="{{ item.id }}"
     {%- for tag in item.tags -%}
-        {%- if tag.startswith("anchor=") -%}
-            id="{{ tag.removeprefix("anchor=") }}"
+        {%- if tag.startswith("=") -%}
+            id="{{ tag.removeprefix("=") }}"
         {% else %}
             data-tag_{{ tag }}
         {%- endif -%}
