@@ -174,6 +174,11 @@ class Node(list):
     def serialise(self):
         return {"id": self.id, "content": self.content, "tags": list(self.tags), "children": [c.serialise() for c in self]}
 
+    def save(self, indent: int = 0):
+        if self.parent is None:
+            return "\n".join(n.save(indent) for n in self)
+        return " " * indent + "- " + "".join("#" + tag + " " for tag in self.tags) + self.content + "".join("\n" + n.save(indent + 2) for n in self)
+
 
 TAG_REGEX = re.compile(r"^#([^\s#]+)\s*(.*)")
 
