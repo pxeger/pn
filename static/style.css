@@ -201,6 +201,10 @@ body {
     display: none;
 }
 
+.cloud-animate {
+    padding: 0 0.3em;
+}
+
 #connected-message .cloud-animate {
     background: radial-gradient(#22D3EE, #CFFAFE);
     background-clip: text;
