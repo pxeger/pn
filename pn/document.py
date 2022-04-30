@@ -86,6 +86,9 @@ class Document:
     def set_content(self, id, content):
         self.nodes[id].content = content
 
+    def update_tag(self, id, tag):
+        self.nodes[id].tags.add(tag)
+
     def create_child(self, parent_id, content):
         node = self.node(self.nodes[parent_id], content)
         self.nodes[parent_id].append(node)

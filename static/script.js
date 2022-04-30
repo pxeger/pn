@@ -57,6 +57,9 @@
                     case 'set_content':
                         $id(message.id).value = message.content;
                         break;
+                    case 'update_tag':
+                        updateTags($node(message.id), message.tag);
+                        break;
                     case 'move':
                         move(message);
                         break;
@@ -145,6 +148,19 @@
         event.dataTransfer.setDragImage(leaf, 0, event.target.scrollHeight / 2);
     });
 
+    const updateTags = (element, tag) => {
+        const attribute = /([^=]*)=(.*)/.exec(tag);
+        if (attribute) {
+            if (attribute[1] === '') {
+                element.id = attribute[2];
+            } else {
+                element.dataset['tag_' + attribute[1]] = attribute[2];
+            }
+        } else {
+            element.dataset['tag_' + tag] = '';
+        }
+    }
+
     const visibleChildNodes = (node) => {
         const checkbox = node.querySelector('.checkbox');
         if (!checkbox.checked) return [];
@@ -156,7 +172,16 @@
         leaf.querySelectorAll('.leaf-text').forEach(element => {
             element.addEventListener('input', (event) => {
                 if (event.isComposing) return;
-                sendMessage({type: 'set_content', id: +event.target.id, content: event.target.value});
+                let content = event.target.value;
+                let match;
+                while ((match = /^#([^\s#]+)\s+(.*)/.exec(content))) {
+                    const tag = match[1];
+                    updateTags($parent(event.target, 'leaf'), tag);
+                    sendMessage({type: 'update_tag', id: +event.target.id, tag});
+                    content = match[2];
+                }
+                event.target.value = content;
+                sendMessage({type: 'set_content', id: +event.target.id, content});
             });
             element.addEventListener('keydown', (event) => {
                 // avoid intefering with system shortcuts

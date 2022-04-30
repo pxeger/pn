@@ -183,6 +183,12 @@ async def websocket_route(ws):
                         else:
                             document.set_content(id, content)
                             to_produce.append(message)
+                    case {"type": "update_tag", "id": int() as id, "tag": str() as tag}:
+                        if id not in document.nodes:
+                            errors.append(f"node ID {id} not found")
+                        else:
+                            document.update_tag(id, tag)
+                            to_produce.append(message)
                     case {"type": "move", "id": int() as id, "parent": int() as parent_id, "index": int() as index} if index >= 0:
                         if parent_id not in document.nodes:
                             errors.append(f"node ID {parent_id} not found")
