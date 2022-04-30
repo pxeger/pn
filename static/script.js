@@ -58,7 +58,7 @@
                         $id(message.id).value = message.content;
                         break;
                     case 'update_tag':
-                        updateTags($node(message.id), message.tag);
+                        addTag($node(message.id), message.tag);
                         break;
                     case 'move':
                         move(message);
@@ -148,7 +148,7 @@
         event.dataTransfer.setDragImage(leaf, 0, event.target.scrollHeight / 2);
     });
 
-    const updateTags = (element, tag) => {
+    const addTag = (element, tag) => {
         const attribute = /([^=]*)=(.*)/.exec(tag);
         if (attribute) {
             if (attribute[1] === '') {
@@ -176,7 +176,7 @@
                 let match;
                 while ((match = /^#([^\s#]+)\s+(.*)/.exec(content))) {
                     const tag = match[1];
-                    updateTags($parent(event.target, 'leaf'), tag);
+                    addTag($parent(event.target, 'node'), tag);
                     sendMessage({type: 'update_tag', id: +event.target.id, tag});
                     content = match[2];
                 }
