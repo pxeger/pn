@@ -1,4 +1,4 @@
-- Welcome to the Help page
+- #big Welcome to the Help page
 - Features
     - Dark and light theme
     - Fullscreen button
