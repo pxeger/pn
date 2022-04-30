@@ -17,7 +17,7 @@
                 {% if ishelp is defined %}
                     <a href="/edit" class="button">
                         <i class="fa-solid fa-arrow-left"></i>
-                        Back
+                        <span class="label">Back</label>
                     </a>
                 {% endif %}
                 {% if edit %}
@@ -43,28 +43,28 @@
                     </div>
                     <button type="submit" id="submit" class="button">
                         <i class="fa-solid fa-floppy-disk"></i>
-                        <span class="sm-hide">Save</span>
+                        <span class="label sm-hide">Save</span>
                     </button>
                 {% endif %}
                 <div class="expand"></div>
                 {% if ishelp is not defined %}
                     <a href="/help" class="button">
                         <i class="fa-solid fa-circle-question"></i>
-                        <span class="sm-hide">Help</span>
+                        <span class="label sm-hide">Help</span>
                     </a>
                     <a href="{{ "/view" if edit else "/edit" }}" class="button">
                         {% if edit %}
                             <i class="fa-solid fa-eye"></i>
-                            <span class="sm-hide">View Only</span>
+                            <span class="label sm-hide">View Only</span>
                         {% else %}
                             <i class="fa-solid fa-pencil"></i>
-                            <span class="sm-hide">Edit</span>
+                            <span class="label sm-hide">Edit</span>
                         {% endif %}
                     </a>
                 {% endif %}
                 <button type="button" id="fullscreen" class="button">
                     <i class="fa-solid fa-expand"></i>
-                    <span class="sm-hide">Fullscreen</span>
+                    <span class="label sm-hide">Fullscreen</span>
                 </button>
             </header>
             <main id="root" class="node" data-id="{{ tree.id }}">
