@@ -264,11 +264,12 @@ async def websocket_route(ws):
                         "type": "create",
                         "parent": int() as id,
                         "content": str() as content,
+                        "index": None | int() as index,
                     }:
                         if id not in document.nodes:
                             errors.append(f"node ID {id} not found")
                         else:
-                            result = document.create_child(id, content).id
+                            result = document.create_child(id, content, index).id
                             message["id"] = result
                             to_produce.append(message)
                             # note: client doesn't know ID of new node, so we send the message to them too

@@ -89,9 +89,12 @@ class Document:
     def update_tag(self, id, tag):
         self.nodes[id].tags.add(tag)
 
-    def create_child(self, parent_id, content):
+    def create_child(self, parent_id, content, index: int | None = None):
         node = self.node(self.nodes[parent_id], content)
-        self.nodes[parent_id].append(node)
+        if index is not None:
+            self.nodes[parent_id].insert(index, node)
+        else:
+            self.nodes[parent_id].append(node)
         return node
 
     def delete_node(self, id):

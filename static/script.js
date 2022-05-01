@@ -122,7 +122,7 @@
         updateBranchClass(parent);
     }
 
-    const create = ({ parent: parentId, content, id, was_you: wasUs }) => {
+    const create = ({ parent: parentId, content, id, was_you: wasUs, index }) => {
         const newContent = $id('new_node').content.cloneNode(true);
         const newNode = newContent.querySelector('.node');
         newContent.querySelector('.node').dataset.id = id;
@@ -133,7 +133,20 @@
         const parent = $node(parentId);
         parent.classList.remove('empty');
         parent.classList.add('has-children');
-        parent.querySelector('.branch').appendChild(newContent);
+        const branch = parent.querySelector('.branch');
+        if (index === null) {
+            branch.appendChild(newContent);
+        } else {
+            const relativeTo = branch.children[index];
+            if (relativeTo === undefined && index < 0) {
+                relativeTo = branch.firstElementChild;
+            }
+            if (relativeTo === undefined) {
+                branch.appendChild(newContent);
+            } else {
+                branch.insertBefore(newContent, relativeTo);
+            }
+        }
         addEventListeners(newNode.querySelector('.leaf'));
         if (wasUs) {
             newNode.querySelector('.leaf-text').focus();
@@ -220,6 +233,11 @@
                         }
                         newTarget.querySelector('.leaf-text').focus();
                     } break;
+                    case 'Enter': {
+                        event.preventDefault();
+                        const message = {type: 'create', parent: +event.target.id, index: 0, content: ''};
+                        sendMessage(message);
+                    } break;
                 }
             });
         });
@@ -283,7 +301,7 @@
             element.addEventListener('click', (event) => {
                 event.preventDefault();
                 const id = $parent(event.target, 'node').dataset.id;
-                const message = {type: 'create', parent: +id, content: ''};
+                const message = {type: 'create', parent: +id, content: '', index: null};
                 sendMessage(message);
             });
         });
