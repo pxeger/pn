@@ -48,9 +48,9 @@ def lex(source):
                 i = indentations.index(indentation)
             except ValueError:
                 error("dedent does not match any previous level of indentation")
-            for _ in indentations[i + 1:]:
+            for _ in indentations[i + 1 :]:
                 yield Token.dedent
-            indentations = indentations[:i + 1]
+            indentations = indentations[: i + 1]
             yield content
 
 
@@ -175,12 +175,23 @@ class Node(list):
         return f"Node({self.content!r}){l}"
 
     def serialise(self):
-        return {"id": self.id, "content": self.content, "tags": list(self.tags), "children": [c.serialise() for c in self]}
+        return {
+            "id": self.id,
+            "content": self.content,
+            "tags": list(self.tags),
+            "children": [c.serialise() for c in self],
+        }
 
     def save(self, indent: int = 0):
         if self.parent is None:
             return "\n".join(n.save(indent) for n in self)
-        return " " * indent + "- " + "".join("#" + tag + " " for tag in self.tags) + self.content + "".join("\n" + n.save(indent + 2) for n in self)
+        return (
+            " " * indent
+            + "- "
+            + "".join("#" + tag + " " for tag in self.tags)
+            + self.content
+            + "".join("\n" + n.save(indent + 2) for n in self)
+        )
 
 
 TAG_REGEX = re.compile(r"^#([^\s#]+)\s*(.*)")

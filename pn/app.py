@@ -43,7 +43,7 @@ async def edit(request):
             "edit": True,
             "template_tree": template_tree,
         },
-        headers=NO_CACHE_HEADERS
+        headers=NO_CACHE_HEADERS,
     )
 
 
@@ -55,7 +55,7 @@ async def view(request):
             "tree": document.root,
             "edit": False,
         },
-        headers=NO_CACHE_HEADERS
+        headers=NO_CACHE_HEADERS,
     )
 
 
@@ -80,7 +80,7 @@ async def tags(request):
         {
             "request": request,
             "item": document.nodes[id],
-        }
+        },
     )
 
 
@@ -123,13 +123,13 @@ consumers = Set()
 
 def produce(messages, origin=None):
     encoded = json.dumps(messages)
-    tasks = [asyncio.create_task(ws.send_text(encoded)) for ws in consumers if ws is not origin]
+    tasks = [
+        asyncio.create_task(ws.send_text(encoded))
+        for ws in consumers
+        if ws is not origin
+    ]
     if tasks:
-        asyncio.create_task(
-            asyncio.wait(
-                tasks,
-                timeout=5)
-        )
+        asyncio.create_task(asyncio.wait(tasks, timeout=5))
 
 
 async def save(request):
@@ -150,7 +150,12 @@ async def save(request):
             fail = "not found"
         document.set_content(id, content)
 
-    produce([{"type": "set_content", "id": id, "content": content} for id, content in updates.items()])
+    produce(
+        [
+            {"type": "set_content", "id": id, "content": content}
+            for id, content in updates.items()
+        ]
+    )
 
     if fail:
         return PlainTextResponse(fail, 404)
@@ -218,13 +223,19 @@ async def websocket_route(ws):
     try:
         async for payload in ws.iter_json():
             if not isinstance(payload, list):
-                await ws.send_json({"type": "error", "value": "messages must be a list"})
+                await ws.send_json(
+                    {"type": "error", "value": "messages must be a list"}
+                )
                 continue
             to_produce = []
             errors = []
             for message in payload:
                 match message:
-                    case {"type": "set_content", "id": int() as id, "content": str() as content}:
+                    case {
+                        "type": "set_content",
+                        "id": int() as id,
+                        "content": str() as content,
+                    }:
                         if id not in document.nodes:
                             errors.append(f"node ID {id} not found")
                         else:
@@ -236,7 +247,12 @@ async def websocket_route(ws):
                         else:
                             document.update_tag(id, tag)
                             to_produce.append(message)
-                    case {"type": "move", "id": int() as id, "parent": int() as parent_id, "index": int() as index} if index >= 0:
+                    case {
+                        "type": "move",
+                        "id": int() as id,
+                        "parent": int() as parent_id,
+                        "index": int() as index,
+                    } if index >= 0:
                         if parent_id not in document.nodes:
                             errors.append(f"node ID {parent_id} not found")
                         elif id not in document.nodes:
@@ -244,7 +260,11 @@ async def websocket_route(ws):
                         else:
                             document.move(id, parent_id, index)
                             to_produce.append(message)
-                    case {"type": "create", "parent": int() as id, "content": str() as content}:
+                    case {
+                        "type": "create",
+                        "parent": int() as id,
+                        "content": str() as content,
+                    }:
                         if id not in document.nodes:
                             errors.append(f"node ID {id} not found")
                         else:
