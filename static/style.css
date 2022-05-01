@@ -274,7 +274,7 @@ body {
     }
 }
 
-[data-tag_big] input {
+[data-tag_big] > .leaf > .leaf-text {
     font-weight: bold;
     font-size: 1.5em;
     margin: 0.3em 0;
