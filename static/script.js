@@ -186,14 +186,21 @@
             element.addEventListener('input', (event) => {
                 if (event.isComposing) return;
                 let content = event.target.value;
-                let match;
-                while ((match = /^#([^\s#]+)\s+(.*)/.exec(content))) {
-                    const tag = match[1];
-                    addTag($parent(event.target, 'node'), tag);
-                    sendMessage({type: 'update_tag', id: +event.target.id, tag});
-                    content = match[2];
+                if (event.data && event.data[event.data.length - 1] === ' ') {
+                    let match;
+                    let addedTag = false;
+                    while ((match = /^#([^\s#]+)\s+(.*)/.exec(content))) {
+                        addedTag = true;
+                        const tag = match[1];
+                        addTag($parent(event.target, 'node'), tag);
+                        sendMessage({type: 'update_tag', id: +event.target.id, tag});
+                        content = match[2];
+                    }
+                    if (addedTag) {
+                        event.target.value = content;
+                        event.target.setSelectionRange(0, 0);
+                    }
                 }
-                event.target.value = content;
                 sendMessage({type: 'set_content', id: +event.target.id, content});
             });
             element.addEventListener('keydown', (event) => {
