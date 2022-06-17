@@ -24,6 +24,8 @@
                         <span class="label">Delete</span>
                     </button>
                 </form>
+            {% else %}
+                <p>This node has no tags.</p>
             {% endfor %}
             <hr>
             <form action="/tags" method="POST" class="tag">
