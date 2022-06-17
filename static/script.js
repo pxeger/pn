@@ -295,8 +295,8 @@
         leaf.querySelectorAll('.delete').forEach((element) => {
             element.addEventListener('click', (event) => {
                 event.preventDefault();
-                if (!confirm('Are you sure you want to delete this?')) return;
                 const node = $parent(event.target, 'node');
+                if (node.classList.contains('has-children') && !confirm('Are you sure you want to delete this?')) return;
                 const oldParent = $parent(node.parentElement, 'node');
                 remove(node);
                 updateBranchClass(oldParent);
