@@ -12,8 +12,7 @@
 
     $('#fullscreen').addEventListener('click', () => $('#root').requestFullscreen());
 
-    if (location.pathname == '/help') {
-        // no editing functionality needed on help page
+    if (!PN_edit) {
         return;
     }
 
